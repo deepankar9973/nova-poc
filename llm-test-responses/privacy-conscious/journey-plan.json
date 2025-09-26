@@ -1,0 +1,97 @@
+{
+  "journey_plan": [
+    {
+      "step_id": "start",
+      "screen_type": "form",
+      "required_fields": [
+        "basicDetails",
+        "monthlyIncome",
+        "incomeSource"
+      ],
+      "optional_fields": [],
+      "ui_preferences": {
+        "layout": " cards",
+        "component_preferences": [
+          "maskedFields",
+          "explicitConsentCheckboxes"
+        ],
+        "validation_strategy": "immediate",
+        "helper_text_level": "minimal"
+      },
+      "next_step_condition": "allFieldsFilled"
+    },
+    {
+      "step_id": "incomeVerification",
+      "screen_type": "form",
+      "required_fields": [
+        "panNumber"
+      ],
+      "optional_fields": [],
+      "ui_preferences": {
+        "layout": "wizard",
+        "component_preferences": [
+          "infoIcons"
+        ],
+        "validation_strategy": "onSubmit",
+        "helper_text_level": "detailed"
+      },
+      "next_step_condition": "panNumberVerified"
+    },
+    {
+      "step_id": "educationVerification",
+      "screen_type": "form",
+      "required_fields": [
+        "educationDetails"
+      ],
+      "optional_fields": [],
+      "ui_preferences": {
+        "layout": "cards",
+        "component_preferences": [
+          "infoIcons"
+        ],
+        "validation_strategy": "immediate",
+        "helper_text_level": "minimal"
+      },
+      "next_step_condition": "educationVerified"
+    },
+    {
+      "step_id": "employmentVerification",
+      "screen_type": "form",
+      "required_fields": [
+        "employmentInformation"
+      ],
+      "optional_fields": [],
+      "ui_preferences": {
+        "layout": "wizard",
+        "component_preferences": [
+          "infoIcons"
+        ],
+        "validation_strategy": "onSubmit",
+        "helper_text_level": "detailed"
+      },
+      "next_step_condition": "employmentVerified"
+    },
+    {
+      "step_id": "review",
+      "screen_type": "form",
+      "required_fields": [
+        "basicDetails"
+      ],
+      "optional_fields": [],
+      "ui_preferences": {
+        "layout": "cards",
+        "component_preferences": [
+          "infoIcons"
+        ],
+        "validation_strategy": "immediate",
+        "helper_text_level": "minimal"
+      },
+      "next_step_condition": "allFieldsFilled"
+    }
+  ],
+  "rationale": {
+    "strategy_alignment": "control",
+    "ux_considerations": "security|awareness|accessibility",
+    "accessibility_notes": "ensure all fields are accessible and easy to understand for users with disabilities"
+  }
+}
