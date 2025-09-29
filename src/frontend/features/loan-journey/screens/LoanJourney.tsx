@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { PersonaSelector } from '../persona/components/PersonaSelector';
-import { Persona } from '../persona/types';
+// --- THIS IS THE CORRECTED IMPORT PATH ---
+import { PersonaSelector } from '@/frontend/features/persona/components/PersonaSelector';
+import { Persona } from '@/frontend/features/persona/types';
 import { UserData } from '../types';
 
 export function LoanJourney() {

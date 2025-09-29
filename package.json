@@ -1,8 +1,13 @@
 {
   "name": "nova-poc",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -10,15 +15,24 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/lab": "^7.0.0-beta.17",
+    "@mui/material": "^7.3.2",
     "@types/node": "^24.5.2",
     "@types/react": "^19.1.14",
     "@types/react-dom": "^19.1.9",
     "next": "^15.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-lazy-load-image-component": "^1.6.3",
+    "react-text-mask": "^5.5.0",
+    "tss-react": "^4.9.19",
     "typescript": "^5.9.2"
   },
   "devDependencies": {
+    "@types/react-lazy-load-image-component": "^1.6.4",
+    "@types/react-text-mask": "^5.4.14",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.13"

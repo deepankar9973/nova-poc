@@ -1,9 +1,10 @@
-import { LoanJourney } from '@/frontend/features/loan-journey/screens/LoanJourney';
+import { JourneyOrchestrator } from '@/frontend/features/loan-journey/JourneyOrchestrator';
+import { MainLayout } from '@/frontend/components/layouts/MainLayout';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col">
-      <LoanJourney />
-    </main>
+    <MainLayout>
+      <JourneyOrchestrator />
+    </MainLayout>
   );
 }

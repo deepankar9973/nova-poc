@@ -1,83 +1,76 @@
 import { Persona, JourneyStep, UserData } from '@/frontend/features/loan-journey/types';
-import { AVAILABLE_COMPONENTS, PROMPT_CONFIG } from './config'; 
-
+import { AVAILABLE_COMPONENTS, PERSONA_PATTERNS } from './config';
 
 export function generateJourneyPlanPrompt(persona: Persona): string {
-    return `You are a world-class UX Architect at Moneyview, a leading Indian FinTech.
-  IMPORTANT: Return ONLY a valid JSON object without any additional text or explanations.
+    const pattern = PERSONA_PATTERNS[persona.llm_strategy];
   
-  PERSONA CONTEXT:
-  Strategy: ${persona.llm_strategy}
-  UX Goal: ${persona.ux_goal}
-  Key UI Traits: ${persona.key_ui_traits.join(', ')}
-  User Profile: ${persona.description}
+    return `You are a UX Architect for a loan app. Your task is to generate a valid JSON object defining a multi-step user journey.
+  CRITICAL INSTRUCTION: You MUST return ONLY the JSON object. Do not include any text before or after the JSON. The JSON structure MUST be followed exactly.
   
-  REQUIRED INFORMATION TO COLLECT:
-  - Basic Details (name, contact)
-  - Monthly Income
-  - Income Source (salary/business/other)
-  - PAN Number
-  - Education Details
-  - Employment Information
+  PERSONA DETAILS:
+  - Strategy: ${persona.llm_strategy}
+  - Journey Pattern to use: **${pattern.name}**
+  - Pattern Description: ${pattern.description}
   
-  AVAILABLE COMPONENTS:
-  ${AVAILABLE_COMPONENTS.join(', ')}
+  CORE TASKS TO ACCOMPLISH IN THE JOURNEY (break these into steps):
+  - Collect Basic Details (name, contact)
+  - Collect Income & Employment Info
+  - Verify PAN
+  - Display Loan Offer
+  - Select Loan Amount & Tenure
+  - Final Confirmation
   
-  JOURNEY CONSTRAINTS:
-  1. Must collect all required information
-  2. Adapt flow complexity to user's digital fluency
-  3. Match UI components to persona traits
-  4. Consider user's time sensitivity
-  5. Maintain security and trust elements
+  Based on the **${pattern.name}** pattern, create a sequence of steps.
+  - For a **Streamlined Form**, combine the first two tasks into a single step.
+  - For a **Guided Form** or **Conversational Chat**, create a separate step for each task.
   
-  Return this exact JSON structure:
+  Return ONLY a JSON object with this exact structure:
   {
     "journey_plan": [
       {
-        "step_id": "unique-identifier",
-        "screen_type": "form",
-        "required_fields": ["field1", "field2"],
-        "optional_fields": ["field3"],
-        "ui_preferences": {
-          "layout": "form",
-          "component_preferences": ["Component1", "Component2"],
-          "validation_strategy": "immediate",
-          "helper_text_level": "minimal"
-        },
-        "next_step_condition": "condition-string"
+        "step_id": "step-1-name-and-contact",
+        "screen_type": "${pattern.name.toLowerCase().replace(/ /g, '-')}",
+        "required_fields": ["fullName", "mobileNumber"]
+      },
+      {
+        "step_id": "step-2-income-and-employment",
+        "screen_type": "${pattern.name.toLowerCase().replace(/ /g, '-')}",
+        "required_fields": ["monthlySalary", "employmentType"]
       }
     ],
     "rationale": {
-      "strategy_alignment": "strategy explanation",
-      "ux_considerations": "ux details",
-      "accessibility_notes": "accessibility details"
+      "strategy_alignment": "Explain WHY you chose this step structure for this persona.",
+      "ux_considerations": "Describe the key UX choices.",
+      "accessibility_notes": "Mention relevant accessibility notes."
     }
   }`;
   }
-  
-  export function generateScreenDesignPrompt(
+
+
+// --- THIS IS THE UPDATED FUNCTION ---
+export function generateScreenDesignPrompt(
     persona: Persona,
-    step: JourneyStep,
+    step: any, // Using 'any' as it's now a dynamic step object
     userData: UserData
   ): string {
+    const screenType = step.screen_type || 'form';
+  
     return `You are a meticulous UI Designer at Moneyview.
-  IMPORTANT: Return ONLY a valid JSON object without any additional text or explanations.
+  IMPORTANT: You MUST return ONLY a single, valid JSON object. Do not include any extra text.
+  CRITICAL: The final JSON object MUST include ALL top-level keys: "screen_title", "layout", "components", "actions", and "analytics".
   
   CONTEXT:
-  Current Step: ${step}
-  Strategy: ${persona.llm_strategy}
-  UI Traits: ${persona.key_ui_traits.join(', ')}
-  User Goal: ${persona.ux_goal}
+  - Current Step ID: ${step.step_id}
+  - Designated Screen Type: ${screenType}
+  - Persona Strategy: ${persona.llm_strategy}
+  - User Goal: ${persona.ux_goal}
+  - Required Fields for this Step: ${JSON.stringify(step.required_fields)}
   
-  CURRENT USER STATE:
-  ${JSON.stringify(userData, null, 2)}
+  AVAILABLE COMPONENTS: ${AVAILABLE_COMPONENTS.join(', ')}
   
-  AVAILABLE COMPONENTS:
-  ${AVAILABLE_COMPONENTS.join(', ')}
-  
-  Return this exact JSON structure:
+  Return this exact JSON structure. Do NOT omit any keys.
   {
-    "screen_title": "Screen Title",
+    "screen_title": "A clear, action-oriented title for the screen",
     "layout": {
       "type": "single",
       "spacing": "comfortable",
@@ -85,56 +78,37 @@ export function generateJourneyPlanPrompt(persona: Persona): string {
     },
     "components": [
       {
-        "component_type": "ComponentName",
+        "component_type": "Header",
+        "position": "header",
+        "props": {
+          "id": "header-welcome",
+          "text": "Welcome!"
+        }
+      },
+      {
+        "component_type": "InputField",
         "position": "main",
         "props": {
-          "id": "field-id",
-          "label": "Field Label",
+          "id": "user-name",
+          "label": "Full Name",
           "type": "text",
-          "placeholder": "Enter value",
-          "helperText": "Help text",
-          "variant": "default",
-          "size": "medium"
-        },
-        "validations": {
-          "required": true,
-          "minLength": 2,
-          "pattern": "regex-pattern",
-          "custom": "custom-rule"
-        },
-        "accessibility": {
-          "ariaLabel": "aria label",
-          "keyboardShortcut": "shortcut"
-        },
-        "conditional_display": {
-          "dependsOn": "field-id",
-          "condition": "condition-string"
+          "required": true
         }
       }
     ],
     "actions": {
       "primary": {
         "text": "Continue",
-        "action": "submit",
-        "validation": ["field1", "field2"]
+        "action": "submit"
       },
       "secondary": {
-        "text": "Back",
+        "text": "Go Back",
         "action": "back"
       }
     },
     "analytics": {
-      "screen_id": "screen-identifier",
-      "track_fields": ["field1", "field2"],
-      "important_events": ["event1", "event2"]
+      "screen_id": "${step.step_id}",
+      "track_fields": ["user-name"]
     }
-  }
-  
-  PERSONA ADAPTATIONS:
-  ${persona.llm_strategy === 'efficiency' ? '- Use compact layouts, keyboard shortcuts, minimal text' : ''}
-  ${persona.llm_strategy === 'reassurance' ? '- Add security indicators, detailed help text, progress tracking' : ''}
-  ${persona.llm_strategy === 'velocity' ? '- Minimize steps, use auto-fill, show time estimates' : ''}
-  ${persona.llm_strategy === 'exploration' ? '- Add comparison tools, save options, clear exit points' : ''}
-  ${persona.llm_strategy === 'control' ? '- Show data usage, add consent checkboxes, explicit confirmations' : ''}
-  ${persona.llm_strategy === 'clarity' ? '- Use simple language, larger text, clear icons with labels' : ''}`;
+  }`;
   }

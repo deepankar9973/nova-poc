@@ -1,5 +1,5 @@
 'use client';
-
+import React from 'react';
 import { useState } from 'react';
 import { useJourney } from '@/frontend/features/loan-journey/JourneyContext';
 import { useLLM } from '@/frontend/hooks/useLLM';

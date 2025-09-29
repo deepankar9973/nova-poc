@@ -103,18 +103,34 @@ async function testAllPersonas() {
     for (const persona of ALL_PERSONAS) {
         console.log(`\n📋 Testing Persona: ${persona.name}`);
         console.log('Strategy:', persona.llm_strategy);
-        console.log('UI Traits:', persona.key_ui_traits.join(', '));
         
         try {
+            // --- ROLE 1: UX ARCHITECT ---
             console.log('\n1️⃣ Generating Journey Plan...');
             const journeyPlan = await llmService.getJourneyPlan({ persona });
-            
-            console.log('\n✅ Journey Plan Generated Successfully');
-            console.log('Number of steps:', journeyPlan.journey_plan.length);
-            console.log('Journey Plan:', JSON.stringify(journeyPlan, null, 2));
+            console.log('✅ Journey Plan Generated Successfully');
+            console.log('   - Screen Type:', journeyPlan.journey_plan[0]?.screen_type || 'N/A');
+            console.log('   - Number of steps:', journeyPlan.journey_plan.length);
 
-            // Add delay between personas to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // --- ROLE 2: UI DESIGNER (NEW TEST) ---
+            if (journeyPlan.journey_plan.length > 0) {
+                const firstStep = journeyPlan.journey_plan[0];
+                console.log(`\n2️⃣ Generating Screen Design for first step: "${firstStep.step_id}"...`);
+                
+                const screenDesign = await llmService.getScreenDesign({
+                    persona,
+                    step: firstStep, // Pass the entire step object
+                    userData: {}
+                });
+                
+                console.log('✅ Screen Design Generated Successfully');
+                console.log('   - Screen Title:', screenDesign.screen_title);
+                console.log('   - Component Count:', screenDesign.components.length);
+
+                // You can add saving logic for screen design here if you want
+            }
+            
+            console.log('\n✅ Test completed successfully for', persona.name);
             
         } catch (error) {
             console.error('\n❌ Test Failed for', persona.name);
@@ -122,6 +138,7 @@ async function testAllPersonas() {
         }
         
         console.log('\n-----------------------------------');
+        await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
     console.log('\n🎉 All Persona Tests Completed!');

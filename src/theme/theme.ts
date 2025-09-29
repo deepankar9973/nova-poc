@@ -1,7 +1,17 @@
 import { createTheme } from "@mui/material";
 
 import { muiTypographyTheme } from "./typography-theme";
-import { flipkartTokens, pothosTokens, jifyTokens, PothosTokensType } from "@mvloans/base-ui.tokens";
+
+// --- FIX #1: Import tokens directly from local files ---
+import * as flipkartTokens from 'external/mv-pbds/base-ui/tokens/flipkart';
+import * as pothosTokens from 'external/mv-pbds/base-ui/tokens/pothos';
+import { PothosTokensType } from 'external/mv-pbds/base-ui/tokens/pothos'; // This might need to be a local type now
+import * as jifyTokens from 'external/mv-pbds/base-ui/tokens/jify';
+
+
+import { breakpoints } from "./breakpoints";
+// --- FIX #2: This import will now work because we copied the file ---
+import { PWAThemeNames } from "./constant.ts";
 
 function getAppTokens(name: string) {
   if (name === PWAThemeNames.FLIPKART) {
@@ -12,8 +22,6 @@ function getAppTokens(name: string) {
   }
   return pothosTokens;
 }
-import { breakpoints } from "./breakpoints";
-import { PWAThemeNames } from "./constant";
 
 export const getTheme = (themeName: string) => {
   let tokens = getAppTokens(themeName);
@@ -21,7 +29,6 @@ export const getTheme = (themeName: string) => {
     components: {
       // @ts-ignore
       MuiTypography: muiTypographyTheme.MuiTypography,
-
       // @ts-ignore
       MuiLink: muiTypographyTheme.MuiLink,
     },
@@ -34,6 +41,7 @@ export const getTheme = (themeName: string) => {
 
 export type MVTheme = ReturnType<typeof getTheme>;
 
+// Module declaration remains the same
 declare module "@mui/material/styles" {
   export interface Theme {
     tokens: PothosTokensType;
