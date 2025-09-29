@@ -1,3 +1,4 @@
+require('dotenv').config({ path: './.env.local' });
 import { LLMService } from './service';
 import { Persona } from '@/frontend/features/loan-journey/types';
 

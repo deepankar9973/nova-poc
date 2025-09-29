@@ -2,17 +2,28 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/frontend/**/*.{js,ts,jsx,tsx,mdx}', // This line is crucial
+    // ... your content paths
+    './src/frontend/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
+      // --- ADD MONEYVIEW BRAND PALETTE ---
       colors: {
-        'moneyview-blue': '#2b73de',
-        'moneyview-green': '#37c893',
+        'mv-green-dark': '#1E5945',
+        'mv-green-light': '#E8F5E9',
+        'mv-text-heading': '#212121',
+        'mv-text-body': '#424242',
+        'mv-text-label': '#757575',
+        'mv-border': '#E0E0E0',
+        'mv-bg': '#F7F7F7',
       },
+      // --- ADD MONEYVIEW FONT FAMILY ---
+      fontFamily: {
+        sans: ['AtAero', 'sans-serif'], // Sets "AtAero" as the default font
+      },
+      borderRadius: {
+        'xl': '12px', // Match the button/input radius
+      }
     },
   },
   plugins: [],

@@ -1,40 +1,35 @@
 import React, { ReactNode } from 'react';
-// Assume you have the MoneyView logo SVG. Place it in your `public` folder.
 import Image from 'next/image';
 
 interface MainLayoutProps {
+  headerContent?: ReactNode;
   children: ReactNode;
 }
 
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout({ headerContent, children }: MainLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="w-full bg-white shadow-md sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Left side can be empty or have a title */}
-            <div className="w-1/3"></div>
-            
-            {/* Center content will be passed as children to the Header */}
-            <div className="w-1/3 flex justify-center">
-              {/* This is where the UserSelector will go */}
-            </div>
-
-            {/* Right side for the logo */}
-            <div className="w-1/3 flex justify-end">
-              <Image 
-               src="/moneyview-logo.png" // Path is relative to the `public` folder
-               alt="MoneyView Logo" 
-               width={150} 
-               height={40} 
-              />
-            </div>
-          </div>
-        </div>
-      </header>
+    // Sets the overall page background and font from tailwind.config.ts
+    <div className="min-h-screen bg-mv-bg font-sans text-mv-text-body flex items-center justify-center p-4">
       
-      <main className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-4xl p-4">
+      {/* Main content container mimicking a phone screen */}
+      <main className="w-full max-w-md bg-white min-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        
+        {/* Top Header Section */}
+        <div className="p-4 border-b border-mv-border">
+          <div className="flex justify-end mb-4">
+            <Image 
+              src="/moneyview-logo.png" // Path relative to the `public` folder
+              alt="MoneyView Logo" 
+              width={120}
+              height={32} 
+            />
+          </div>
+          {/* The UserSelector component will be rendered here */}
+          {headerContent}
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-grow p-6 pt-4 overflow-y-auto">
           {children}
         </div>
       </main>

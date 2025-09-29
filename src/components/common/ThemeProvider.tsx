@@ -1,29 +1,24 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-// --- FIX #1: Import the real ThemeProvider from MUI ---
-import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+// We MUST import the real ThemeProvider from MUI
+import { ThemeProvider as MuiThemeProvider, CssBaseline } from '@mui/material';
 import { getTheme } from '@/theme/theme';
-import '@/theme/styles.css';
 
-// Create a default theme instance to provide to the application
-const defaultTheme = getTheme('pothos'); // Or 'flipkart', 'jify'
+// Create the default MoneyView theme instance
+const moneyviewTheme = getTheme('pothos'); // Using 'pothos' as the default
 
-interface ThemeProviderProps {
+interface AppThemeProviderProps {
   children: ReactNode;
 }
 
-// Rename our component slightly to avoid confusion
-export function AppThemeProvider({ children }: ThemeProviderProps) {
+export function AppThemeProvider({ children }: AppThemeProviderProps) {
   return (
-    // --- FIX #2: Wrap everything in the MUI ThemeProvider ---
-    // This makes the `theme` object available to all child components,
-    // including the ones from the mv-pbds library.
-    <MuiThemeProvider theme={defaultTheme}>
-      {/* Our custom div for data-theme can remain if needed */}
-      <div className="mv-theme" data-theme={defaultTheme.themeName}>
-        {children}
-      </div>
+    // This provider is what makes the design system components work correctly.
+    <MuiThemeProvider theme={moneyviewTheme}>
+      {/* CssBaseline is a MUI component that resets browser styles for consistency */}
+      <CssBaseline />
+      {children}
     </MuiThemeProvider>
   );
 }
