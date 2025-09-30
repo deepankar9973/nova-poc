@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { DynamicComponent } from '@/frontend/components/registry';
+import { ProgressBar } from '@/frontend/components/ui/progress/ProgressBar';
 import { ScreenDesignResponse, UserData, UIComponent } from '../types';
 
 interface DynamicStepRendererProps {
@@ -15,70 +16,71 @@ interface DynamicStepRendererProps {
   onBack?: () => void;
 }
 
-// --- THIS IS THE FIX: The props were missing from the function signature ---
 export function DynamicStepRenderer({
-  screenDesign,
-  totalSteps,
-  currentStepIndex,
-  formData,
-  errors,
-  onFormChange,
-  onComplete,
-  onBack,
-}: DynamicStepRendererProps) {
-
-  const { screen_title, components, actions } = screenDesign;
-
-  return (
-    <div className="w-full h-full flex flex-col">
-      {/* 1. Header Section */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-mv-text-heading">
-          {screen_title}
-        </h1>
-        <p className="text-sm text-mv-text-label mt-1">
-          Provide a few basic details to get started.
-        </p>
-      </div>
-
-      {/* 2. Main content area for dynamic components */}
-      <div className="flex-grow space-y-6">
-        {components.map((component: UIComponent) => (
-          <div key={component.props.id}>
-            {component.props.sectionTitle && (
-              <h2 className="text-base font-medium text-mv-text-body mb-3">{component.props.sectionTitle}</h2>
-            )}
+    screenDesign,
+    totalSteps,
+    currentStepIndex,
+    formData,
+    errors,
+    onFormChange,
+    onComplete,
+    onBack,
+  }: DynamicStepRendererProps) {
+    const { screen_title, components, actions } = screenDesign;
+  
+    return (
+      <div className="w-full max-w-[560px] mx-auto">
+        {/* Progress Bar */}
+        <ProgressBar 
+          currentStep={currentStepIndex + 1}
+          totalSteps={totalSteps}
+          stepName={screen_title}
+        />
+  
+        {/* Header Section - Reduced size */}
+        <div className="mb-6">
+          <h1 className="text-lg font-semibold text-gray-900 mb-1">
+            {screen_title}
+          </h1>
+          {screenDesign.screen_subtitle && (
+            <p className="text-sm text-gray-600">
+              {screenDesign.screen_subtitle}
+            </p>
+          )}
+        </div>
+  
+        {/* Dynamic Components with better spacing */}
+        <div className="space-y-5">
+          {components.map((component: UIComponent) => (
+            <div key={component.props.id} className="mb-4">
+              <DynamicComponent
+                component={component}
+                value={formData[component.props.id]}
+                error={errors[component.props.id]}
+                onChange={onFormChange}
+              />
+            </div>
+          ))}
+        </div>
+  
+        {/* Action Button */}
+        <div className="mt-8 pb-6">
+          {actions.primary && (
             <DynamicComponent
-              component={component}
-              value={formData[component.props.id]}
-              error={errors[component.props.id]}
-              onChange={onFormChange}
+              component={{
+                component_type: "CTAButton",
+                position: "footer",
+                props: { 
+                  ...actions.primary,
+                  className: "w-full h-12 bg-[#1B5E3F] hover:bg-[#2D7A5A] text-white text-base font-semibold rounded-xl transition-colors duration-200"
+                }
+              }}
+              value={null}
+              onChange={() => {}}
+              onComplete={onComplete}
             />
-          </div>
-        ))}
+          )}
+        </div>
       </div>
-
-      {/* 3. Action button at the bottom */}
-      <div className="mt-auto pt-8">
-        {actions.primary && (
-          <DynamicComponent
-            component={{
-              component_type: "CTAButton",
-              position: "footer",
-              props: { 
-                text: actions.primary.text || 'Continue', 
-                variant: 'primary', 
-                fullWidth: true,
-                className: "h-14 text-lg rounded-xl font-semibold bg-mv-green-dark hover:bg-opacity-90"
-              }
-            }}
-            value={null}
-            onChange={() => {}}
-            onComplete={onComplete}
-          />
-        )}
-        {/* You can add the back button here if needed */}
-      </div>
-    </div>
-  );
-}
+    );
+  }

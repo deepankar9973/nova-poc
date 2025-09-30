@@ -1,137 +1,193 @@
+// src/frontend/features/loan-journey/useJourneyOrchestrator.ts
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useJourney } from './JourneyContext';
-import { useLLM } from '@/frontend/hooks/useLLM';
-import { LLMJourneyResponse, ScreenDesignResponse, Persona } from './types';
+import { llmClientService } from '@/frontend/services/llm';
+import { 
+  LLMJourneyResponse, 
+  ScreenDesignResponse, 
+  Persona, 
+  DynamicJourneyStep,
+  UserData 
+} from './types';
 
 export const useJourneyOrchestrator = () => {
-  // Global state from context (persists across the session)
+  // Context and State
   const { userData, updateUserData } = useJourney();
-  
-  // LLM API functions
-  const { getJourneyPlan, getScreenDesign } = useLLM();
 
-  // State for the overall journey
+  // Journey State
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [journeyPlan, setJourneyPlan] = useState<LLMJourneyResponse | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isJourneyComplete, setIsJourneyComplete] = useState(false);
   
-  // State for the CURRENT screen being displayed
+  // Screen State
   const [screenDesign, setScreenDesign] = useState<ScreenDesignResponse | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
-  // State for the final offer
   const [loanOffer, setLoanOffer] = useState<any>(null);
 
-  // General UI state
+  // UI State
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const currentStep = journeyPlan?.journey_plan[currentStepIndex];
 
-  // Effect 1: Fetch the entire journey plan when a persona is selected.
+  // Initialize Journey
   useEffect(() => {
-    // This runs ONLY when the selectedPersona changes.
     if (!selectedPersona) return;
 
     const initializeJourney = async () => {
       setIsLoading(true);
       setError(null);
-      setJourneyPlan(null); // Clear old plan
+      setJourneyPlan(null);
       setIsJourneyComplete(false);
 
       try {
-        const plan = await getJourneyPlan(selectedPersona);
+        const plan = await llmClientService.getJourneyPlan(selectedPersona);
         setJourneyPlan(plan);
-        setCurrentStepIndex(0); // Reset to the first step
+        setCurrentStepIndex(0);
       } catch (err: any) {
-        setError(`Failed to create your journey: ${err.message}`);
+        setError(`Failed to create journey: ${err.message}`);
+        setSelectedPersona(null);
       } finally {
-        // We set loading to false in the next effect, after the first screen is fetched
+        setIsLoading(false);
       }
     };
 
     initializeJourney();
-  }, [selectedPersona, getJourneyPlan]); // Dependency: only the persona
+  }, [selectedPersona]);
 
-  // Effect 2: Fetch the screen design for the current step.
+  // Process Current Step
   useEffect(() => {
-    // This runs ONLY when the journey plan is set, or the step index changes.
     if (!journeyPlan || !selectedPersona) return;
-
+  
     const processCurrentStep = async () => {
       const stepToExecute = journeyPlan.journey_plan[currentStepIndex];
       
+      console.log('Current step data:', stepToExecute); // Debug log
+  
       if (!stepToExecute) {
         setIsJourneyComplete(true);
         setIsLoading(false);
         return;
       }
-
+  
+      // Convert the step format if needed
+      const normalizedStep: DynamicJourneyStep = {
+        step_id: stepToExecute.step || stepToExecute.step_id || `STEP_${currentStepIndex + 1}`,
+        screen_type: 'form',
+        required_fields: stepToExecute.tasks || stepToExecute.required_fields || [],
+        optional_fields: [],
+        ui_preferences: {
+          layout: 'form',
+          component_preferences: [],
+          validation_strategy: 'immediate',
+          helper_text_level: 'minimal'
+        }
+      };
+  
+      console.log('Normalized step:', normalizedStep); // Debug log
+  
       setIsLoading(true);
-      setScreenDesign(null); // Clear previous screen design
+      setScreenDesign(null);
       setLoanOffer(null);
-
+  
       try {
-        if (stepToExecute.step_id === 'OFFER_DISPLAY') {
-          // It's time to calculate the offer
-          const response = await fetch('/api/llm/journey', {
-            method: 'POST',
-            body: JSON.stringify({ type: 'calculate_offer', userData }),
-            headers: { 'Content-Type': 'application/json' },
-          });
-          const result = await response.json();
-          if (!result.success) throw new Error(result.details);
-          setLoanOffer(result.data);
+        if (normalizedStep.step_id === 'OFFER_DISPLAY') {
+          const offer = await llmClientService.calculateOffer(userData);
+          setLoanOffer(offer);
         } else {
-          // It's a regular step, so get the screen design from the LLM
-          const design = await getScreenDesign(selectedPersona, stepToExecute, userData);
+          const design = await llmClientService.getScreenDesign({
+            persona: selectedPersona,
+            step: normalizedStep,
+            userData,
+            currentStepIndex
+          });
+          
           setScreenDesign(design);
-          // Initialize form data for the new screen
+          
           const initialData: Record<string, any> = {};
           design.components.forEach(comp => {
-            if (comp.props.id) initialData[comp.props.id] = userData[comp.props.id] || '';
+            if (comp.props.id) {
+              initialData[comp.props.id] = userData[comp.props.id] || '';
+            }
           });
           setFormData(initialData);
         }
       } catch (err: any) {
-        setError(`Could not load step: ${err.message}`);
+        console.error('Step processing error:', err);
+        setError(`Failed to load step: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     processCurrentStep();
-  }, [journeyPlan, currentStepIndex, selectedPersona, getScreenDesign, userData]);
-
-  const handleGenerateJourney = (persona: Persona) => {
+  }, [journeyPlan, currentStepIndex, selectedPersona, userData]);
+  
+  // Handlers
+  const handleGenerateJourney = useCallback((persona: Persona) => {
+    console.log('Generating journey for persona:', persona); // Debug log
+    if (!persona || !persona.id || !persona.llm_strategy) {
+      setError('Invalid persona data');
+      return;
+    }
     setSelectedPersona(persona);
-  };
+  }, []);
+  
 
-  const handleStepComplete = () => {
+  const handleStepComplete = useCallback(() => {
     updateUserData(formData);
     setCurrentStepIndex(prev => prev + 1);
-  };
+  }, [formData, updateUserData]);
   
-  const handleBack = () => {
-    if (currentStepIndex > 0) setCurrentStepIndex(prev => prev - 1);
-  };
+  const handleBack = useCallback(() => {
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex(prev => prev - 1);
+    }
+  }, [currentStepIndex]);
   
-  const handleFormChange = (id: string, value: any) => {
+  const handleFormChange = useCallback((id: string, value: any) => {
     setFormData(prev => ({ ...prev, [id]: value }));
-  };
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[id];
+      return newErrors;
+    });
+  }, []);
 
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     setSelectedPersona(null);
     setJourneyPlan(null);
     setIsJourneyComplete(false);
-  };
+    setFormData({});
+    setErrors({});
+    setCurrentStepIndex(0);
+    setLoanOffer(null);
+    setError(null);
+  }, []);
 
   return {
-    isLoading, error, screenDesign, journeyPlan, currentStepIndex, loanOffer, selectedPersona, isJourneyComplete,
-    handleGenerateJourney, handleStepComplete, handleBack, handleRestart, handleFormChange, formData, errors
+    // State
+    isLoading,
+    error,
+    screenDesign,
+    journeyPlan,
+    currentStepIndex,
+    currentStep,
+    loanOffer,
+    selectedPersona,
+    isJourneyComplete,
+    formData,
+    errors,
+    
+    // Handlers
+    handleGenerateJourney,
+    handleStepComplete,
+    handleBack,
+    handleRestart,
+    handleFormChange,
   };
 };
