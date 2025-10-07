@@ -1,0 +1,56 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "esnext",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      // --- ADD THESE NEW ALIASES ---
+      "@mvloans/base-ui.common": ["./external/mv-pbds/base-ui/common/index.ts"],
+      "@mvloans/base-ui.tokens": ["./external/mv-pbds/base-ui/tokens/index.ts"],
+      "@mvloans/base-ui.typography": ["./external/mv-pbds/base-ui/typography/index.ts"],
+      "@mvloans/base-ui.mv-svg-icon": ["./external/mv-pbds/base-ui/mv-svg-icon/index.ts"],
+      "@mvloans/base-ui.boundary": ["./external/mv-pbds/base-ui/boundary/index.ts"],
+      "@mvloans/base-ui.icon": ["./external/mv-pbds/base-ui/icon/index.ts"]
+    },
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "strict": true,
+    "jsx": "preserve", // Changed from "react-jsx" to "preserve" as per Next.js standard
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "incremental": true,
+    "allowJs": true,
+    "noEmit": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
