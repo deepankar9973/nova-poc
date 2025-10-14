@@ -1,6 +1,7 @@
 import React from "react";
 
-import { Button as MuiButton, Skeleton, SkeletonOwnProps } from "@mui/material";
+import { Button as MuiButton, Skeleton } from "@mui/material";
+import type { SkeletonOwnProps } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { variantConstants } from "@mvloans/base-ui.common";
 import Typography from "@mvloans/base-ui.typography";
