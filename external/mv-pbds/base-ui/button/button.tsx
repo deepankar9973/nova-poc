@@ -67,7 +67,7 @@ export const Button = ({
     return (
       <Skeleton
         data-testid={id}
-        variant={skeletonVariants.rectangular as SkeletonOwnProps["variant"]}
+        variant={skeletonVariants.rectangular as SkeletonOwnProps["variant"] || "rectangular"}
         className={cx(classes.root, classes[size], className)}
       />
     );
