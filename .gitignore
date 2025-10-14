@@ -23,8 +23,12 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
+.env*
+!.env.example
 
 # IDE
 .vscode/
 .idea/
+
+# external
+external/mv-pbds/

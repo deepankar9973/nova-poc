@@ -1,44 +1,56 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
-    // "rootDir": "./src",
-    // "outDir": "./dist",
-
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "esnext",
-    "types": [],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
-
-    // Other Outputs
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      // --- ADD THESE NEW ALIASES ---
+      "@mvloans/base-ui.common": ["./external/mv-pbds/base-ui/common/index.ts"],
+      "@mvloans/base-ui.tokens": ["./external/mv-pbds/base-ui/tokens/index.ts"],
+      "@mvloans/base-ui.typography": ["./external/mv-pbds/base-ui/typography/index.ts"],
+      "@mvloans/base-ui.mv-svg-icon": ["./external/mv-pbds/base-ui/mv-svg-icon/index.ts"],
+      "@mvloans/base-ui.boundary": ["./external/mv-pbds/base-ui/boundary/index.ts"],
+      "@mvloans/base-ui.icon": ["./external/mv-pbds/base-ui/icon/index.ts"]
+    },
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-
-    // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
     "strict": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve", // Changed from "react-jsx" to "preserve" as per Next.js standard
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "incremental": true,
+    "allowJs": true,
+    "noEmit": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

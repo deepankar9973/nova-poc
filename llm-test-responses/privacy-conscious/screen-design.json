@@ -1,0 +1,150 @@
+{
+  "screen_title": "Control Data Sharing",
+  "layout": {
+    "type": "split",
+    "spacing": "comfortable"
+  },
+  "components": [
+    {
+      "component_type": "Header",
+      "position": "header",
+      "props": {
+        "id": "control-header",
+        "label": "Control Data Sharing",
+        "type": "heading",
+        "variant": "secondary"
+      },
+      "validations": {
+        "required": true
+      },
+      "accessibility": {
+        "ariaLabel": "control data sharing header",
+        "keyboardShortcut": null
+      }
+    },
+    {
+      "component_type": "BodyText",
+      "position": "main",
+      "props": {
+        "id": "data-usage-explaination",
+        "label": "Data Usage Explanation",
+        "type": "body",
+        "variant": "secondary"
+      },
+      "validations": {
+        "required": true
+      },
+      "accessibility": {
+        "ariaLabel": "data usage explanation",
+        "keyboardShortcut": null
+      }
+    },
+    {
+      "component_type": "InputField",
+      "position": "main",
+      "props": {
+        "id": "consent-checkboxes",
+        "label": "Consent Checkboxes",
+        "type": "checkbox",
+        "variant": "secondary"
+      },
+      "validations": {
+        "required": true
+      },
+      "accessibility": {
+        "ariaLabel": "consent checkboxes",
+        "keyboardShortcut": null
+      }
+    },
+    {
+      "component_type": "Slider",
+      "position": "main",
+      "props": {
+        "id": "data-usage-level",
+        "label": "Data Usage Level",
+        "type": "slider",
+        "variant": "secondary"
+      },
+      "validations": {
+        "required": true
+      },
+      "accessibility": {
+        "ariaLabel": "data usage level slider",
+        "keyboardShortcut": null
+      }
+    },
+    {
+      "component_type": "ChipGroup",
+      "position": "main",
+      "props": {
+        "id": "data-usage-categories",
+        "label": "Data Usage Categories",
+        "type": "chipgroup",
+        "variant": "secondary"
+      },
+      "validations": {
+        "required": true
+      },
+      "accessibility": {
+        "ariaLabel": "data usage categories chipgroup",
+        "keyboardShortcut": null
+      }
+    },
+    {
+      "component_type": "RadioButtonGroup",
+      "position": "main",
+      "props": {
+        "id": "data-usage-types",
+        "label": "Data Usage Types",
+        "type": "radiobuttongroup",
+        "variant": "secondary"
+      },
+      "validations": {
+        "required": true
+      },
+      "accessibility": {
+        "ariaLabel": "data usage types radiobuttongroup",
+        "keyboardShortcut": null
+      }
+    },
+    {
+      "component_type": "CTAButton",
+      "position": "primary",
+      "props": {
+        "id": "control-primary",
+        "label": "Control",
+        "type": "cta",
+        "variant": "secondary"
+      },
+      "validations": {
+        "required": true
+      },
+      "accessibility": {
+        "ariaLabel": "control cta button",
+        "keyboardShortcut": null
+      }
+    }
+  ],
+  "actions": {
+    "primary": {
+      "text": "Control Data Sharing",
+      "action": "confirm",
+      "validation": []
+    },
+    "secondary": {
+      "text": "Go Back",
+      "action": "cancel"
+    }
+  },
+  "analytics": {
+    "screen_id": "control-data-sharing",
+    "track_fields": [
+      "consent_checkboxes",
+      "data_usage_level",
+      "data_usage_categories"
+    ],
+    "important_events": [
+      "consent_checked"
+    ]
+  }
+}
