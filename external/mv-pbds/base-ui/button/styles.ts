@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { makeStyles } from "tss-react/mui";
 
 import { variantConstants } from "@mvloans/base-ui.common";
