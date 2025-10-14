@@ -1,7 +1,7 @@
 import { makeStyles } from "tss-react/mui";
 
 import { variantConstants } from "@mvloans/base-ui.common";
-import { ButtonProps } from "./button";
+import type { ButtonProps } from "./button";
 
 import { buttonVariantConstants } from "./constants";
 import { extractEffect, extractPropertyColor } from "./utils";
