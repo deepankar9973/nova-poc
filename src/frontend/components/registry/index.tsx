@@ -9,7 +9,6 @@ import { Button } from '../../../../external/mv-pbds/base-ui/button/button';
 import { Slider } from '../../../../external/mv-pbds/base-ui/slider/slider';
 import { RadioButton } from '../../../../external/mv-pbds/base-ui/radio-button/radio-button';
 import { Typography } from '../../../../external/mv-pbds/base-ui/typography/typography';
-// ... import other components as needed
 
 export const componentRegistry: ComponentRegistry = {
   // Map LLM names to the actual components
@@ -40,9 +39,9 @@ export function DynamicComponent({ component, value, error, onChange, onComplete
 
   const Component = componentRegistry[componentName];
 
-  // --- THIS IS THE FIX FOR THE INPUT BUG ---
+  // --- THIS IS THE CORRECTED HANDLER ---
   const handleChange = (eventOrValue: any) => {
-    // Correctly extract the value whether it's a browser event or a direct value
+    // Correctly extract the value, using 'eventOrValue' consistently.
     const newValue = (eventOrValue && eventOrValue.target) ? eventOrValue.target.value : eventOrValue;
     if (component.props.id) {
         onChange(component.props.id, newValue);

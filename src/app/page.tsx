@@ -11,6 +11,8 @@ import { JourneyComplete } from '@/frontend/features/loan-journey/components/ste
 import { ChatStepRenderer } from '@/frontend/features/loan-journey/components/chat/ChatStepRenderer';
 import Image from 'next/image';
 
+// NOTE: The faulty import for 'AmountSelectionStep' has been removed.
+
 export default function Home() {
   const {
     isLoading, error, screenDesign, journeyPlan, currentStepIndex, loanOffer, 
@@ -20,21 +22,26 @@ export default function Home() {
     handleChatSubmit,
   } = useJourneyOrchestrator();
 
-  // This function decides WHICH component to render. The wrapper is now removed.
   const renderContent = () => {
-    // --- THIS LOGIC REMAINS THE SAME ---
+    // Priority 1: Handle primary states (loading, error, completion)
     if (isLoading && selectedPersona) {
-      return (
-        <div className="flex items-center justify-center h-full">
-          <JourneyGenerationLoader personaName={selectedPersona.name} />
-        </div>
-      );
+      return ( <div className="flex items-center justify-center h-full"><JourneyGenerationLoader personaName={selectedPersona.name} /></div> );
     }
-    // ... (other primary states like error, complete, offer) ...
-
-    // --- RENDER THE CHAT/FORM COMPONENTS DIRECTLY ---
+    if (error) { 
+      return ( <div className="flex items-center justify-center h-full"><ErrorScreen error={error} retry={() => handleGenerateJourney(selectedPersona!)} /></div> );
+    }
+    if (isJourneyComplete) { 
+      return ( <div className="flex items-center justify-center h-full"><JourneyComplete onRestart={handleRestart} /></div> );
+    }
+    
+    // Priority 2: Handle special journey steps
+    if (loanOffer) { 
+      // This is correct. The `handleStepComplete` function is now smart enough to handle all personas.
+      return <OfferDisplay offer={loanOffer} onAccept={handleStepComplete} />;
+    }
+    
+    // Priority 3: Handle the main journey renderers
     if (selectedPersona?.llm_strategy === 'clarity' && chatHistory.length > 0 && journeyPlan) {
-      // The ChatStepRenderer is already a full-height component, so it needs no wrapper.
       return (
         <ChatStepRenderer
           history={chatHistory}
@@ -46,7 +53,6 @@ export default function Home() {
       );
     }
     if (screenDesign && journeyPlan) { 
-      // The DynamicStepRenderer handles its own internal centering.
       return (
         <DynamicStepRenderer
           screenDesign={screenDesign}
@@ -61,17 +67,16 @@ export default function Home() {
       );
     }
 
-    // --- WRAP ONLY THE WELCOME SCREEN ---
-    // The default Welcome Screen is the only one that needs special centering.
+    // Priority 4: Default Welcome Screen
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center max-w-sm mx-auto">
-          <div className="mb-10">
+          <div className="mb-4">
             <Image
               src="/hero.png"
               alt="Personalized Journey"
-              width={160}
-              height={160}
+              width={264}
+              height={180}
               className="mx-auto"
               priority
             />
@@ -89,14 +94,11 @@ export default function Home() {
 
   return (
     <MainLayout
-      headerContent={
-        <UserSelector onGenerate={handleGenerateJourney} isLoading={isLoading} />
-      }
+      headerContent={ <UserSelector onGenerate={handleGenerateJourney} isLoading={isLoading} /> }
     >
-      {/* --- THIS IS THE FIX --- */}
-      {/* The `MainLayout` provides the padding. We render the content directly inside it */}
-      {/* without any extra centering divs, allowing child components to fill the space. */}
-      {renderContent()}
+      <div className="p-4 md:p-6 h-full">
+        {renderContent()}
+      </div>
     </MainLayout>
   );
-}
+  };

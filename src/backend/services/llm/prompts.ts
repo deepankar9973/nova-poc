@@ -1,6 +1,6 @@
 // src/backend/services/llm/prompts.ts
-import { Persona, UserData, JourneyStep } from '@/frontend/features/loan-journey/types';
-import { AVAILABLE_COMPONENTS, PERSONA_PATTERNS } from './config';
+import { Persona, UserData, DynamicJourneyStep } from '@/frontend/features/loan-journey/types';
+import { PERSONA_PATTERNS } from './config';
 
 const getPersonaInstructions = (persona: Persona) => {
   switch (persona.llm_strategy) {
@@ -62,13 +62,17 @@ const getPersonaInstructions = (persona: Persona) => {
 };
 
 export function generateJourneyPlanPrompt(persona: Persona): string {
-  const pattern = PERSONA_PATTERNS[persona.llm_strategy];
   const personaInstructions = getPersonaInstructions(persona);
 
   return `You are a UX Architect for a loan app. Your task is to generate a valid JSON object defining a multi-step user journey.
 CRITICAL INSTRUCTION: You MUST return ONLY the JSON object.
 
-// ... (persona context and instructions remain the same) ...
+CONTEXT:
+- Persona Name: ${persona.name}
+- Persona Strategy: ${persona.llm_strategy}
+
+**PERSONA-SPECIFIC INSTRUCTIONS:**
+**${personaInstructions}**
 
 CORE TASKS TO ACCOMPLISH IN THE JOURNEY (break these into steps according to the instructions):
 1.  **BASIC_DETAILS:** Collect "fullName", "mobileNumber".
@@ -88,7 +92,7 @@ Return ONLY a JSON object with a "journey_plan" array and a "rationale" object.`
 
 export function generateScreenDesignPrompt(
     persona: Persona,
-    step: JourneyStep,
+    step: DynamicJourneyStep,
     userData: UserData,
     currentStepIndex: number
   ): string {
@@ -96,12 +100,11 @@ export function generateScreenDesignPrompt(
       throw new Error('Invalid step data provided');
     }
   
-    const screenTitle = step.step_id.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+    const screenTitle = String(step.step_id).replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
     const personaInstructions = getPersonaInstructions(persona);
   
-    // --- NEW LOGIC FOR CHAT-BASED PERSONA ---
     if (persona.llm_strategy === 'clarity') {
-      const fieldToCollect = step.required_fields[0]; // In chat, we only ask for one piece of info at a time.
+      const fieldToCollect = step.required_fields[0];
       return `You are a friendly and helpful chat assistant for MoneyView. Your task is to ask a single, clear question to collect one piece of information.
 CRITICAL INSTRUCTION: You MUST return ONLY the JSON object.
 
@@ -125,7 +128,6 @@ Return ONLY a JSON object with this exact structure:
 }`;
     }
 
-    // --- ORIGINAL PROMPT FOR ALL OTHER FORM-BASED PERSONAS ---
     return `You are a UI Designer for MoneyView's loan app. Generate a valid JSON object for a single screen.
 CRITICAL INSTRUCTION: You MUST return ONLY the JSON object.
 

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { LLMService } from '@/backend/services/llm/service';
 import { calculateLoanOffer } from '@/backend/utils/creditLogic';
-import { Persona, UserData } from '@/frontend/features/loan-journey/types';
+import { Persona, UserData, DynamicJourneyStep } from '@/frontend/features/loan-journey/types';
 
 const llmService = new LLMService();
 
@@ -11,7 +11,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log('Received request body:', body);
 
-    const { type, persona, step, userData, currentStepIndex } = body;
+    // Use 'let' to allow modification of the step object
+    let { type, persona, step, userData, currentStepIndex } = body;
 
     // Get the initial journey plan
     if (type === 'journey_plan') {
@@ -43,6 +44,15 @@ export async function POST(request: Request) {
     // Get the design for a specific screen
     else if (type === 'screen_design') {
       console.log('Processing screen_design request');
+
+      // --- THIS IS THE FIX ---
+      // Sanitize the step_id to ensure it's a string before we do anything else.
+      // This prevents the server from crashing if the LLM returns a number.
+      if (step && typeof step.step_id !== 'string') {
+        console.warn(`Sanitizing step_id: Was type ${typeof step.step_id}, converting to string.`);
+        step.step_id = String(step.step_id);
+      }
+      // --- END OF FIX ---
       
       if (!isValidPersona(persona) || !step) {
         return NextResponse.json({
@@ -64,6 +74,8 @@ export async function POST(request: Request) {
           data: screenDesign 
         });
       } catch (error: any) {
+        // Log the error with more context on the server
+        console.error(`Error in getScreenDesign for step: ${step?.step_id}`, error);
         return NextResponse.json({
           success: false,
           error: 'Screen Design Error',

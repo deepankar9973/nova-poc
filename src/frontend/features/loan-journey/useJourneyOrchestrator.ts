@@ -4,12 +4,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useJourney } from './JourneyContext';
 import { llmClientService } from '@/frontend/services/llm';
-import { 
-  LLMJourneyResponse, 
-  ScreenDesignResponse, 
-  Persona, 
+import {
+  LLMJourneyResponse,
+  ScreenDesignResponse,
+  Persona,
   DynamicJourneyStep,
-  UserData 
+  UserData
 } from './types';
 
 // Interface for a single chat message
@@ -19,7 +19,6 @@ interface ChatMessage {
 }
 
 export const useJourneyOrchestrator = () => {
-  // All state declarations remain the same...
   const { userData, updateUserData } = useJourney();
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [journeyPlan, setJourneyPlan] = useState<LLMJourneyResponse | null>(null);
@@ -36,7 +35,7 @@ export const useJourneyOrchestrator = () => {
 
   const currentStep = journeyPlan?.journey_plan[currentStepIndex];
 
-  // Initialize Journey (no changes needed)
+  // Initialize Journey
   useEffect(() => {
     if (!selectedPersona) return;
     const initializeJourney = async () => {
@@ -59,53 +58,37 @@ export const useJourneyOrchestrator = () => {
     initializeJourney();
   }, [selectedPersona]);
 
-  // --- THIS IS THE CORRECTED EFFECT HOOK ---
+  // Process Current Step
   useEffect(() => {
     if (!journeyPlan || !selectedPersona) return;
-  
     const processCurrentStep = async () => {
       const stepToExecute = journeyPlan.journey_plan[currentStepIndex];
-      
       if (!stepToExecute) {
         setIsJourneyComplete(true);
         return;
       }
-  
       setIsLoading(true);
       setError(null);
       setScreenDesign(null);
       setLoanOffer(null);
-  
       try {
-        // --- FIX: HANDLE SPECIAL STEPS FIRST, REGARDLESS OF PERSONA ---
-        // Priority 1: Handle the Offer Display step.
         if (stepToExecute.step_id === 'OFFER_DISPLAY') {
-          console.log("Processing universal step: OFFER_DISPLAY");
           const offer = await llmClientService.calculateOffer(userData);
           setLoanOffer(offer);
-          return; // Stop execution here, no screen design needed.
+          return;
         }
-
-        // Priority 2: Handle any other steps with no fields to collect by skipping them.
         if (!stepToExecute.required_fields || stepToExecute.required_fields.length === 0) {
-          console.log(`Skipping step ${currentStepIndex + 1} ('${stepToExecute.step_id}') as it has no required fields.`);
           setCurrentStepIndex(prev => prev + 1);
-          return; // Stop execution here.
+          return;
         }
-  
-        // Priority 3: Now, handle data collection steps based on persona.
         if (selectedPersona.llm_strategy === 'clarity') {
-          // Chat-based UI
           const response = await llmClientService.getScreenDesign({ persona: selectedPersona, step: stepToExecute, userData, currentStepIndex });
           const chatResponse = response.chat_response;
           if (chatResponse && chatResponse.field_id !== 'undefined') {
             setCurrentField(chatResponse.field_id);
             setChatHistory(prev => [...prev, { speaker: 'bot', text: chatResponse.bot_message }]);
-          } else {
-            throw new Error("Invalid or undefined chat response from server.");
-          }
+          } else { throw new Error("Invalid chat response from server."); }
         } else {
-          // Form-based UI
           const design = await llmClientService.getScreenDesign({ persona: selectedPersona, step: stepToExecute, userData, currentStepIndex });
           setScreenDesign(design);
           const initialData: Record<string, any> = {};
@@ -115,17 +98,15 @@ export const useJourneyOrchestrator = () => {
           setFormData(initialData);
         }
       } catch (err: any) {
-        console.error('Step processing error:', err);
         setError(`Failed to load step: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
     };
-  
     processCurrentStep();
-  }, [journeyPlan, currentStepIndex, selectedPersona, userData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [journeyPlan, currentStepIndex, selectedPersona]);
   
-  // All other handlers (handleChatSubmit, handleGenerateJourney, etc.) remain exactly the same.
   const handleChatSubmit = useCallback((message: string) => {
     if (!currentField) return;
     setChatHistory(prev => [...prev, { speaker: 'user', text: message }]);
@@ -147,15 +128,16 @@ export const useJourneyOrchestrator = () => {
     if (currentStepIndex > 0) setCurrentStepIndex(prev => prev - 1);
   }, [currentStepIndex]);
   
-  const handleFormChange = useCallback((id: string, value: any) => {
+  // This is the version of the function that we know works for input fields.
+  const handleFormChange = (id: string, value: any) => {
     setFormData(prev => ({ ...prev, [id]: value }));
     setErrors(prev => {
       const newErrors = { ...prev };
       delete newErrors[id];
       return newErrors;
     });
-  }, []);
-
+  };
+  
   const handleRestart = useCallback(() => {
     setSelectedPersona(null);
     setJourneyPlan(null);

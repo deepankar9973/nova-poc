@@ -1,14 +1,13 @@
+// src/backend/services/llm/service.ts
 import OpenAI from 'openai';
 import { LLM_CONFIG, LLM_ERRORS } from './config';
 import { generateJourneyPlanPrompt, generateScreenDesignPrompt } from './prompts';
-import { LLMRequest, LLMResponse, ScreenDesignResponse, LLMServiceError, JourneyStep } from './types';
+import { LLMRequest, LLMResponse, ScreenDesignResponse, LLMServiceError, DynamicJourneyStep } from './types';
 
-// Initialize OpenAI (assuming this is at the top of your file)
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY is not defined. Please add it to your .env.local file.");
 }
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 
 export class LLMService {
   private async makeOpenAIRequest(prompt: string): Promise<string> {
@@ -67,8 +66,9 @@ export class LLMService {
     }
   }
 
+  // --- THIS IS THE FIX ---
   async getScreenDesign(request: LLMRequest & { 
-    step: JourneyStep; 
+    step: DynamicJourneyStep; 
     currentStepIndex: number;
   }): Promise<ScreenDesignResponse> {
     try {
@@ -83,13 +83,14 @@ export class LLMService {
         request.userData || {},
         request.currentStepIndex
       );
-      const jsonResponse = await this.makeOpenAIRequest(prompt);
       
-      // THIS IS THE CORRECTED LOGIC
+      // First, determine which validation function to use based on the persona.
       const validator = request.persona.llm_strategy === 'clarity'
         ? this.validateChatResponse.bind(this)
         : this.validateScreenDesign.bind(this);
         
+      // Now, make the request and process it with the correct validator.
+      const jsonResponse = await this.makeOpenAIRequest(prompt);
       return await this.processLLMResponse<ScreenDesignResponse>(
         jsonResponse,
         validator
@@ -99,6 +100,7 @@ export class LLMService {
       throw error;
     }
   }
+  // --- END OF FIX ---
 
   private validateJourneyPlan(plan: any): boolean {
     try {
@@ -118,7 +120,10 @@ export class LLMService {
       const hasRequiredKeys = ['screen_title', 'layout', 'components', 'actions', 'analytics'].every(
         key => key in design
       );
-      if (!hasRequiredKeys) return false;
+      if (!hasRequiredKeys) {
+        console.error("Form validation failed: Missing one of the required keys.");
+        return false;
+      }
       console.log('Screen design validation successful');
       return true;
     } catch {
@@ -126,13 +131,18 @@ export class LLMService {
     }
   }
 
-  // NEW VALIDATION FUNCTION FOR CHAT RESPONSES
   private validateChatResponse(response: any): boolean {
     try {
       console.log('\nValidating screen design (chat)...');
-      if (!response || !response.chat_response) return false;
+      if (!response || !response.chat_response) {
+        console.error("Chat validation failed: 'chat_response' key is missing.");
+        return false;
+      }
       const { bot_message, field_id } = response.chat_response;
-      if (typeof bot_message !== 'string' || typeof field_id !== 'string' || field_id === 'undefined') return false;
+      if (typeof bot_message !== 'string' || typeof field_id !== 'string' || field_id === 'undefined' || bot_message.trim() === '') {
+        console.error("Chat validation failed: 'bot_message' or 'field_id' is invalid or empty.");
+        return false;
+      }
       console.log('Chat response validation successful');
       return true;
     } catch {
