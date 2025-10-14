@@ -6,6 +6,10 @@ import { useLLM } from '@/frontend/hooks/useLLM';
 import { DynamicComponent } from '@/frontend/components/registry';
 import { ScreenDesignResponse } from '../types';
 
+import { LoadingScreen } from './LoadingScreen'; 
+import { ErrorScreen } from './ErrorScreen';
+import { CTAButton } from './CTAButton';
+
 export function ScreenRenderer() {
   const { currentPersona, currentStep, userData, updateUserData, nextStep } = useJourney();
   const { isLoading, error, getScreenDesign } = useLLM();
