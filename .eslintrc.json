@@ -1,9 +1,14 @@
 {
-  "extends": "next/core-web-vitals",
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "ignorePatterns": ["external/**"],
   "rules": {
     "react/no-unescaped-entities": "off",
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "off",
     "@typescript-eslint/no-empty-interface": "off"
   }
 }
